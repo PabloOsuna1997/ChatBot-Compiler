@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
 using Irony.Parsing;
 using Irony.Ast;
 using Proyecto2.Analisis;
@@ -125,6 +124,8 @@ namespace Proyecto2
 
                 if (Root != null)
                 {
+                    Acciones.RealizarAccionesAcciones(Root);        //la cadena es correcta mandamos a ejecutar las acciones
+                    //despues las impresiones en consola de los print
                     return true;
                 }
                 else
@@ -203,6 +204,7 @@ namespace Proyecto2
             }
             catch (Exception) { MessageBox.Show("Archivo NO Guardado."); }
         }
+      
         #endregion
     }
 }

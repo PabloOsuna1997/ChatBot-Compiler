@@ -147,7 +147,8 @@ namespace Proyecto2.Analisis
                 AC = new NonTerminal("AC"),
                 INICIALIZACIONARREGLO = new NonTerminal("INICIALIZACIONARREGLO"),
                 LISTADATOS = new NonTerminal("LISTADATOS"),
-                ASIGNACIONARREGLO = new NonTerminal("ASIGNACIONARREGLO");
+                ASIGNACIONARREGLO = new NonTerminal("ASIGNACIONARREGLO"),
+                MASASIG = new NonTerminal("MASASIG");
             #endregion
 
             #region Gramatica
@@ -166,22 +167,20 @@ namespace Proyecto2.Analisis
             INICIO.Rule = INICIO + ACCIONES
                          | ACCIONES;
 
-            ACCIONES.Rule = Id + tkDOSPUNTOS + TIPO + AC            //para quitar la ambiguedad que habia entre las declaraciones
-                             | ASIGNACIONVAR                                        //de variables, arreglos y metodos.
-                             | ASIGNACIONARREGLO;
-
-            AC.Rule = tkCORA + DECLARACIONARREGLOS
-                      | tkPARA + DECLARACIONMETODOS
-                      | tkCOMA + DECLARACIONVARIABLES
-                      | tkPUNTOYCOMA            //AQUI SE ARIA COMO UNA DECLARACION DE UNA VARIABLE
-                      | tkIGUAL + ASIGNACION;   //Y AQUI UNA DECLARACION Y ASIGNACION DE UNA SOLA VARIABLE
-
+            //UNICAS ACCIONES QUE SE REALIZARAN DE FORMA GLOBAL.
+            ACCIONES.Rule = //declaraciones
+                             DECLARACIONVARIABLES
+                            | DECLARACIONMETODOS
+                            | DECLARACIONARREGLOS
+                            //asignaciones
+                            | ASIGNACIONARREGLO
+                            | ASIGNACIONVAR;
 
             #region DECLARACION DE ARREGLO
 
-            DECLARACIONARREGLOS.Rule = OPERACION + tkCORC + tkIGUAL + INICIALIZACIONARREGLO + tkPUNTOYCOMA;
+            DECLARACIONARREGLOS.Rule = Id + tkDOSPUNTOS + TIPO + tkCORA + OPERACION + tkCORC + INICIALIZACIONARREGLO + tkPUNTOYCOMA;
 
-            INICIALIZACIONARREGLO.Rule = tkLLAVA + LISTADATOS + tkLLAVC
+            INICIALIZACIONARREGLO.Rule = tkIGUAL + tkLLAVA + LISTADATOS + tkLLAVC
                                       | Empty;
 
             LISTADATOS.Rule = LISTADATOS + tkCOMA + CONDICIONES
@@ -197,12 +196,13 @@ namespace Proyecto2.Analisis
 
             #region DECLARACION DE VARIABLES MULTIPLES
 
-            DECLARACIONVARIABLES.Rule = Id + LISTAIDS + tkDOSPUNTOS + TIPO + ASIGNACION;
+            DECLARACIONVARIABLES.Rule = Id + MASASIG;
+
+            MASASIG.Rule = tkCOMA + LISTAIDS + tkDOSPUNTOS + TIPO + ASIGNACION + tkPUNTOYCOMA
+                            | tkDOSPUNTOS + TIPO + ASIGNACION + tkPUNTOYCOMA;
 
             LISTAIDS.Rule = LISTAIDS + tkCOMA + Id
-                            | Id
-                            | Empty
-            ;
+                            | Id;
 
             TIPO.Rule = tkINT
                         | tkDOUBLE
@@ -210,8 +210,8 @@ namespace Proyecto2.Analisis
                         | tkCHAR
                         | tkBOOL;
 
-            ASIGNACION.Rule = CONDICIONES + tkPUNTOYCOMA //<-- (OPERACIONES ARITMETICAS)
-                              | Empty + tkPUNTOYCOMA;
+            ASIGNACION.Rule = tkIGUAL + CONDICIONES  //<-- (OPERACIONES ARITMETICAS)
+                              | Empty;
 
             #endregion
 
@@ -222,7 +222,7 @@ namespace Proyecto2.Analisis
 
             #region DECLARACION METODOS 
 
-            DECLARACIONMETODOS.Rule = LISTAPARAMETROS + tkPARC + tkLLAVA + LISTASENTENCIAS + tkLLAVC;
+            DECLARACIONMETODOS.Rule = Id + tkDOSPUNTOS + TIPO + tkPARA + LISTAPARAMETROS + tkPARC + tkLLAVA + LISTASENTENCIAS + tkLLAVC;
 
             LISTAPARAMETROS.Rule = LISTAPARAMETROS + tkCOMA + PARAMETRO
                                    | PARAMETRO;
