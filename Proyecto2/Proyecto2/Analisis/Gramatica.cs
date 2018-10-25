@@ -105,7 +105,7 @@ namespace Proyecto2.Analisis
                 OPERACIONES1 = new NonTerminal("OPERACIONES1"),
                 OPERACIONES2 = new NonTerminal("OPERACIONES2"),
                 OPERACIONES3 = new NonTerminal("OPERACIONES3"),
-                OPERACIONES4 = new NonTerminal("OPERACIOENS4"),
+                OPERACIONES4 = new NonTerminal("OPERACIONES4"),
                 OPERACIONES5 = new NonTerminal("OPERACIONES5"),
                 OPERACIONES6 = new NonTerminal("OPERACIONES6"),
                 OPERACIONES7 = new NonTerminal("OPERACIONES7"),
@@ -247,7 +247,7 @@ namespace Proyecto2.Analisis
                              | tkRETURN + OPERACION + tkPUNTOYCOMA        //return
                              | tkBREAK + tkPUNTOYCOMA                     //break
                              | ACCIONES
-                             | Empty;//   |PRINT;
+                             | Empty;
             #endregion
 
             #region IF-ELSE
@@ -293,7 +293,7 @@ namespace Proyecto2.Analisis
 
             PRINT.Rule = tkPRINT + tkPARA + LISTAEXPRESIONES + tkPARC + tkPUNTOYCOMA;
 
-            LISTAEXPRESIONES.Rule = LISTAEXPRESIONES + tkMAS + OPERACION
+            LISTAEXPRESIONES.Rule = LISTAEXPRESIONES + tkCOMA + OPERACION
                                     | OPERACION;
 
             #endregion
@@ -386,7 +386,7 @@ namespace Proyecto2.Analisis
                                 | CONDICIONES9
             ;
 
-            CONDICIONES9.Rule = CONDICIONES9 + tkDISTINTO + CONDICIONES10
+            CONDICIONES9.Rule =  tkDISTINTO + CONDICIONES10  // < --- funcionara como not
                               | CONDICIONES10
           ;
 

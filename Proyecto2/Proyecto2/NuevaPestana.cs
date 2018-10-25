@@ -120,12 +120,17 @@ namespace Proyecto2
 
             if (!TextoAanalizar.Equals(""))
             {
+                Consola.Clear();
                 Root = Analizar.EjecucionAnalisis(TextoAanalizar);        //llamo al metodo analizar de la clase analizar por ende esta public y estatica
 
                 if (Root != null)
                 {
                     Acciones.RealizarAccionesAcciones(Root);        //la cadena es correcta mandamos a ejecutar las acciones
-                    //despues las impresiones en consola de los print
+                    List<String> impresiones = Analisis.Acciones.Impresiones; //despues las impresiones en consola de los print
+                    for (int i = 0; i < impresiones.Count; i++)
+                    {
+                        Consola.AppendText(impresiones[i]+"\n");
+                    }
                     return true;
                 }
                 else
