@@ -24,6 +24,7 @@ namespace Proyecto2.Analisis
 
             //cadena 
             StringLiteral Cadena = new StringLiteral("Cadena", "\"");
+            StringLiteral Char = TerminalFactory.CreateCSharpChar("Char");
 
             //comentarios
             CommentTerminal COMENTARIOLINEA = new CommentTerminal("LINE_COMMENT", "//", "\n", "\r\n");
@@ -217,7 +218,8 @@ namespace Proyecto2.Analisis
 
             #region ASIGNACION DE VARIABLE
 
-            ASIGNACIONVAR.Rule = Id + tkIGUAL + CONDICIONES + tkPUNTOYCOMA;
+            ASIGNACIONVAR.Rule = Id + tkIGUAL + CONDICIONES + tkPUNTOYCOMA
+                                 | Id + INCREODECRE + tkPUNTOYCOMA;
             #endregion
 
             #region DECLARACION METODOS 
@@ -266,7 +268,7 @@ namespace Proyecto2.Analisis
 
             CASOS.Rule = tkCASE + OPERACION + tkDOSPUNTOS + LISTASENTENCIAS + tkBREAK + tkPUNTOYCOMA;
 
-            DEFAULT.Rule = tkDEFAULT + OPERACION + tkDOSPUNTOS + LISTASENTENCIAS + tkBREAK + tkPUNTOYCOMA
+            DEFAULT.Rule = tkDEFAULT + tkDOSPUNTOS + LISTASENTENCIAS + tkBREAK + tkPUNTOYCOMA
                            | Empty;
 
             #endregion
@@ -280,7 +282,7 @@ namespace Proyecto2.Analisis
 
             #region DO-WHILE
 
-            DO.Rule = tkDO + tkLLAVA + LISTASENTENCIAS + tkLLAVC + tkWHILE + tkPARA + CONDICIONES + tkPARC + tkPUNTOYCOMA;
+            DO.Rule = tkDO + tkLLAVA + LISTASENTENCIAS + tkLLAVC + tkWHILE + tkPARA + CONDICIONES + tkPARC;
             #endregion
 
             #region WHILE
@@ -341,10 +343,14 @@ namespace Proyecto2.Analisis
                                | Decimal
                                | Id
                                | Id + tkCORA + OPERACION + tkCORC       //acceso a una posicion de un arreglo
+                               |Char                                        //| Id + INCREODECRE
                                | Cadena
                                | LLAMADA                                //llamada a un metodo
                                | tkGETUSER + tkPARA + tkPARC            //funcion privada  que devuelde el usuario logeado
                                | tkPARA + OPERACION + tkPARC
+                                | tkTRUE
+                                | tkFALSE
+            //|CONDICIONES
             ;
             #endregion
 
@@ -386,13 +392,11 @@ namespace Proyecto2.Analisis
                                 | CONDICIONES9
             ;
 
-            CONDICIONES9.Rule =  tkDISTINTO + CONDICIONES10  // < --- funcionara como not
+            CONDICIONES9.Rule = tkDISTINTO + CONDICIONES10  // < --- funcionara como not
                               | CONDICIONES10
           ;
 
             CONDICIONES10.Rule = OPERACION
-                                | tkTRUE
-                                | tkFALSE
                                 | Id + tkPUNTO + tkCOMPARE + tkPARA + Cadena + tkPARC           //compare porque siempre devolvera un tru o un false
                                 | tkPARA + CONDICIONES + tkPARC
             ;

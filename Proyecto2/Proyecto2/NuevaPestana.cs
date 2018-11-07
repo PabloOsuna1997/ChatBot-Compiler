@@ -95,7 +95,7 @@ namespace Proyecto2
                         }
                     }
                 }
-                /*foreach (string y in Numeros)
+               /* foreach (string y in Numeros)
                 {
                     if (x.Length != 0)
                     {

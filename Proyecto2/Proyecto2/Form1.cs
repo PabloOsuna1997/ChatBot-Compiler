@@ -44,7 +44,7 @@ namespace Proyecto2
 
         private void ejecutarArchivoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ins.pintarpalabras();
+            //ins.pintarpalabras();
             bool resultado = ins.analizar();
 
             if (resultado) Console.WriteLine("cadena correcta.");
