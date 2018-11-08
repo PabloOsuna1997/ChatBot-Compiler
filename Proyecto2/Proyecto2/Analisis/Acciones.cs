@@ -12,10 +12,11 @@ namespace Proyecto2.Analisis
 {
     class Acciones
     {
+        static String tipoparentesis = "";
         static Boolean Yasedetubo = false;
         static Boolean Break = false;
         static String NombreMetodoActual = "";
-        static String Returnmetodo = "";
+        static Retorno Returnmetodo = new Retorno("", "");
 
         static int Nivel = 0;
         static int contadorambitos = 0;
@@ -53,9 +54,10 @@ namespace Proyecto2.Analisis
         {
 
             #region LIMPIEZA DE VARIABLE
+            tipoparentesis = "";
 
             NombreMetodoActual = "";
-            Returnmetodo = "";
+            Returnmetodo = null;
             Yasedetubo = false; //sirve para detener cuando venga un return o break
             Break = false;
 
@@ -228,7 +230,7 @@ namespace Proyecto2.Analisis
                             else
                             {
                                 String id = Tipos_Y_Id(Nodo.ChildNodes[i].ChildNodes[0]);
-                                String valor = Condiciones(Nodo.ChildNodes[i].ChildNodes[2]);
+                                Retorno valor = Condiciones(Nodo.ChildNodes[i].ChildNodes[2]);
 
                                 for (int x = 0; x < Amb.Count; x++)
                                 {
@@ -241,7 +243,7 @@ namespace Proyecto2.Analisis
                                             Simbolos yeah = (Simbolos)si[l];
                                             if (yeah.GetId().Equals(id))
                                             {
-                                                yeah.SetValor(valor);
+                                                yeah.SetValor(valor.getValor());
                                             }
                                         }
                                     }
@@ -409,7 +411,7 @@ namespace Proyecto2.Analisis
                         else
                         {
                             String id = Tipos_Y_Id(Nodo.ChildNodes[0]);
-                            String valor = Condiciones(Nodo.ChildNodes[2]);
+                            Retorno valor = Condiciones(Nodo.ChildNodes[2]);
 
                             for (int x = 0; x < Amb.Count; x++)
                             {
@@ -422,7 +424,7 @@ namespace Proyecto2.Analisis
                                         Simbolos yeah = (Simbolos)si[l];
                                         if (yeah.GetId().Equals(id))
                                         {
-                                            yeah.SetValor(valor);
+                                            yeah.SetValor(valor.getValor());
                                         }
                                     }
                                 }
@@ -496,8 +498,8 @@ namespace Proyecto2.Analisis
                         break;
                     case "CONDICIONES":
 
-                        String para = Condiciones(Nodo.ChildNodes[0]);
-                        listaparametros.Add(para);
+                        Retorno para = Condiciones(Nodo.ChildNodes[0]);
+                        listaparametros.Add(para.getValor());
 
                         break;
                     // break;
@@ -517,16 +519,19 @@ namespace Proyecto2.Analisis
                         if (Nodo.ChildNodes.Count == 3)
                         {
                             EjecucionCodigo(Nodo.ChildNodes[0], Ambito, Nivel);
-                            Print += Operaciones(Nodo.ChildNodes[2]);
+                            Retorno ret = Operaciones(Nodo.ChildNodes[2]);
+                            Print += ret.getValor();
                         }
                         else
                         {
-                            Print += Operaciones(Nodo.ChildNodes[0]);
+                            Retorno ret1 = Operaciones(Nodo.ChildNodes[0]);
+                            Print += ret1.getValor();
                         }
                         break;
 
                     case "OPERACION":
-                        Print += Operaciones(Nodo);
+                        Retorno ret2 = Operaciones(Nodo);
+                        Print += ret2.getValor();
                         break;
                     #endregion
 
@@ -537,9 +542,9 @@ namespace Proyecto2.Analisis
                         contadorambitos++;
                         Amb.Add(new Ambitos(AmbitoVariable, new List<Simbolos>(), Nivel));      //Creamos un nuevo ambito
 
-                        String condi = Condiciones(Nodo.ChildNodes[2]);         //si condiciones es true se mete al if  de lo contrario se mete al else
+                        Retorno condi = Condiciones(Nodo.ChildNodes[2]);         //si condiciones es true se mete al if  de lo contrario se mete al else
 
-                        if (Convert.ToBoolean(condi))       //condicion true
+                        if (Convert.ToBoolean(condi.getValor()))       //condicion true
                         {
                             EjecucionCodigo(Nodo.ChildNodes[5], AmbitoVariable, Nivel);
                         }
@@ -584,7 +589,7 @@ namespace Proyecto2.Analisis
                         contadorambitos++;
                         Amb.Add(new Ambitos(AmbitoVariable, new List<Simbolos>(), Nivel));      //Creamos un nuevo ambito
 
-                        String condi1 = "";
+                        Retorno condi1 = null;
                         for (int i = 0; i < Nodo.ChildNodes.Count; i++)
                         {
                             if (!Break)
@@ -593,16 +598,16 @@ namespace Proyecto2.Analisis
                                 {
                                     condi1 = Condiciones(Nodo.ChildNodes[2]);         //si condiciones es true se mete al if  de lo contrario se mete al else
 
-                                    if (!Convert.ToBoolean(condi1))       //condicion true
+                                    if (!Convert.ToBoolean(condi1.getValor()))       //condicion true
                                     {
                                         break;
                                     }
                                 }
                                 else
                                 {
-                                    if (i == 5 && Convert.ToBoolean(condi1))
+                                    if (i == 5 && Convert.ToBoolean(condi1.getValor()))
                                     {
-                                        while (Convert.ToBoolean(condi1))
+                                        while (Convert.ToBoolean(condi1.getValor()))
                                         {
                                             EjecucionCodigo(Nodo.ChildNodes[i], AmbitoVariable, Nivel);
                                             EjecucionCodigo(Nodo, AmbitoVariable, Nivel);
@@ -633,7 +638,7 @@ namespace Proyecto2.Analisis
                         contadorambitos++;
                         Amb.Add(new Ambitos(AmbitoVariable, new List<Simbolos>(), Nivel));      //Creamos un nuevo ambito
 
-                        String condi2 = "";
+                        Retorno condi2 = null;
                         for (int i = 0; i < Nodo.ChildNodes.Count; i++)
                         {
                             if (!Break)
@@ -642,7 +647,7 @@ namespace Proyecto2.Analisis
                                 {
                                     condi2 = Condiciones(Nodo.ChildNodes[6]);         //si condiciones es true se mete al if  de lo contrario se mete al else
 
-                                    if (Convert.ToBoolean(condi2))       //condicion true
+                                    if (Convert.ToBoolean(condi2.getValor()))       //condicion true
                                     {
                                         EjecucionCodigo(Nodo, AmbitoVariable, Nivel);
                                     }
@@ -677,7 +682,7 @@ namespace Proyecto2.Analisis
                         Amb.Add(new Ambitos(AmbitoVariable, new List<Simbolos>(), Nivel));      //Creamos un nuevo ambito
 
                         bool Increodecre = false;
-                        String condi3 = "";
+                        Retorno condi3 = null;
                         for (int i = 0; i < Nodo.ChildNodes.Count; i++)
                         {
                             if (!Break)
@@ -691,7 +696,7 @@ namespace Proyecto2.Analisis
                                 {
                                     condi3 = Condiciones(Nodo.ChildNodes[3]);         //si condiciones es true se mete al if  de lo contrario se mete al else
 
-                                    if (Convert.ToBoolean(condi3))       //condicion true
+                                    if (Convert.ToBoolean(condi3.getValor()))       //condicion true
                                     {
                                         EjecucionCodigo(Nodo.ChildNodes[9], AmbitoVariable, Nivel);
                                         i = 4;
@@ -768,8 +773,8 @@ namespace Proyecto2.Analisis
                         contadorambitos++;
                         Amb.Add(new Ambitos(AmbitoVariable, new List<Simbolos>(), Nivel));      //Creamos un nuevo ambito
 
-                        String OperecionSwitch = Operaciones(Nodo.ChildNodes[2]);
-                        Boolean Entrocasos = Switch(Nodo.ChildNodes[5], OperecionSwitch);
+                        Retorno OperecionSwitch = Operaciones(Nodo.ChildNodes[2]);
+                        Boolean Entrocasos = Switch(Nodo.ChildNodes[5], OperecionSwitch.getValor());
 
                         if (!Entrocasos) { Switch(Nodo.ChildNodes[6], ""); }         //si no entro en ninguna caso mando el nodo default
 
@@ -797,8 +802,8 @@ namespace Proyecto2.Analisis
                     break;
                 case "CASOS":
                     //tkCASE + OPERACION + tkDOSPUNTOS + LISTASENTENCIAS + tkBREAK + tkPUNTOYCOMA;
-                    String Operacionaevaluar = Operaciones(Nodo.ChildNodes[1]);
-                    if (Operacionaevaluar.Equals(Operacion))
+                    Retorno Operacionaevaluar = Operaciones(Nodo.ChildNodes[1]);
+                    if (Operacionaevaluar.getValor().Equals(Operacion))
                     {
                         entrocasos = true;
                         EjecucionCodigo(Nodo.ChildNodes[3], AmbitoVariable, Nivel);
@@ -918,8 +923,8 @@ namespace Proyecto2.Analisis
                     }
                     break;
                 case "CONDICIONES":
-                    String valor = Condiciones(Nodo);
-                    Valores.Add(valor);
+                    Retorno valor = Condiciones(Nodo);
+                    Valores.Add(valor.getValor());
                     break;
             }
         }
@@ -947,7 +952,8 @@ namespace Proyecto2.Analisis
                 case "ASIGNACION":
                     if (Nodo.ChildNodes.Count == 2)
                     {
-                        Valovariable = Condiciones(Nodo.ChildNodes[1]);
+                        Retorno reto = Condiciones(Nodo.ChildNodes[1]);
+                        Valovariable = reto.getValor();
                     }
                     break;
                 case "LISTAIDS":
@@ -1020,2201 +1026,11 @@ namespace Proyecto2.Analisis
             }
         }
 
-        public static String operacionSeguntipos(String tipodato1, String tipodato2, String number1, String number2, String Operacion)
+        public static Retorno Condiciones(ParseTreeNode Nodo)
         {
-            String resultado = "";
-
-            if (Operacion.Equals("suma"))
-            {
-                #region SUMA
-                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
-                {
-                    if (Convert.ToBoolean(number1) && Convert.ToBoolean(number2))
-                    {
-                        resultado = "2.0";
-                    }
-                    else if (!Convert.ToBoolean(number1) && Convert.ToBoolean(number2))
-                    {
-                        resultado = "1.0";
-                    }
-                    else if (Convert.ToBoolean(number1) && !Convert.ToBoolean(number2))
-                    {
-                        resultado = "1.0";
-                    }
-                    else if (!Convert.ToBoolean(number1) && !Convert.ToBoolean(number2))
-                    {
-                        resultado = "0.0";
-                    }
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 + Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 + Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 + Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 + Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-
-                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
-                {
-                    resultado = number1 + number2;
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 + Convert.ToInt32(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 + Convert.ToInt32(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 + Convert.ToInt32(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 + Convert.ToInt32(number1)).ToString();
-                    }
-
-                }
-                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
-                {
-                    resultado = "Error tipo dato al operar Boolean con Char.";
-                }
-
-
-                //doubles 
-
-                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
-                {
-                    resultado = (Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString();
-
-                }
-                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
-                {
-                    resultado = number1 + number2;
-                }
-
-                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) + Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number2) + Encoding.ASCII.GetBytes(number1)[0]).ToString();
-
-                }
-
-                //ints
-                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
-                {
-                    resultado = number1 + number2;
-                }
-
-                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
-                {
-                    resultado = (Convert.ToInt32(number1) + Convert.ToInt32(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToInt32(number1) + Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
-                {
-                    resultado = (Convert.ToInt32(number2) + Encoding.ASCII.GetBytes(number1)[0]).ToString();
-
-                }
-
-                //chars 
-
-                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
-                {
-                    resultado = number1 + number2;
-                }
-
-                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
-                {
-                    resultado = (Convert.ToInt32(Encoding.ASCII.GetBytes(number1)[0]) + Convert.ToInt32(Encoding.ASCII.GetBytes(number2)[0])).ToString();
-
-                }
-
-                // string
-                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
-                {
-                    resultado = number1 + number2;
-                }
-                #endregion}
-            }
-            else if (Operacion.Equals("resta"))
-            {
-                #region RESTA
-                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
-                {
-                    resultado = "Error tipo dato al restar Boolean con Boolean.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 - Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 - Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 - Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 - Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-
-                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al restar Boolean con String.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 - Convert.ToInt32(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 - Convert.ToInt32(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 - Convert.ToInt32(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 - Convert.ToInt32(number1)).ToString();
-                    }
-
-                }
-                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
-                {
-                    resultado = "Error tipo dato al restar Boolean con Char.";
-                }
-
-                //doubles 
-
-                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
-                {
-                    resultado = (Convert.ToDouble(number1) - Convert.ToDouble(number2)).ToString();
-
-                }
-                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al restar Double con String.";
-                }
-
-                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) - Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) - Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) - Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] - Convert.ToDouble(number2)).ToString();
-
-                }
-
-                //ints
-                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al restar Int con String.";
-                }
-
-                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
-                {
-                    resultado = (Convert.ToInt32(number1) - Convert.ToInt32(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToInt32(number1) - Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] - Convert.ToInt32(number2)).ToString();
-
-                }
-
-                //chars 
-
-                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al restar Char con String.";
-                }
-
-                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
-                {
-                    resultado = (Convert.ToInt32(Encoding.ASCII.GetBytes(number1)[0]) - Convert.ToInt32(Encoding.ASCII.GetBytes(number2)[0])).ToString();
-
-                }
-
-                // string
-                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al restar String con String.";
-                }
-                #endregion
-            }
-            else if (Operacion.Equals("multiplicacion"))
-            {
-                #region MULTIPLICAICION
-                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
-                {
-                    resultado = "Error tipo dato al multiplicar Boolean con Boolean.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 * Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 * Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 * Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 * Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-
-                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al multiplicar Boolean con String.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 * Convert.ToInt32(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 * Convert.ToInt32(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 * Convert.ToInt32(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 * Convert.ToInt32(number1)).ToString();
-                    }
-
-                }
-                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
-                {
-                    resultado = "Error tipo dato al multiplicar Boolean con Char.";
-                }
-
-
-                //doubles 
-
-                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
-                {
-                    resultado = (Convert.ToDouble(number1) * Convert.ToDouble(number2)).ToString();
-
-                }
-                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al multiplicar Double con String.";
-                }
-
-                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) * Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) * Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) * Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] * Convert.ToDouble(number2)).ToString();
-
-                }
-
-                //ints
-                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al restar Int con String.";
-                }
-
-                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
-                {
-                    resultado = (Convert.ToInt32(number1) * Convert.ToInt32(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToInt32(number1) * Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] * Convert.ToInt32(number2)).ToString();
-
-                }
-
-                //chars 
-
-                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al multiplicar Char con String.";
-                }
-
-                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
-                {
-                    resultado = (Convert.ToInt32(Encoding.ASCII.GetBytes(number1)[0]) * Convert.ToInt32(Encoding.ASCII.GetBytes(number2)[0])).ToString();
-
-                }
-
-                // string
-                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al multiplicar String con String.";
-                }
-                #endregion
-            }
-            else if (Operacion.Equals("division"))
-            {
-                #region DIVISION
-                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
-                {
-                    resultado = "Error tipo dato al dividir Boolean con Boolean.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 / Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 / Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 / Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 / Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-
-                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al dividir Boolean con String.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 / Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 / Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 / Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 / Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
-                {
-                    resultado = "Error tipo dato al dividir Boolean con Char.";
-                }
-
-
-                //doubles 
-
-                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
-                {
-                    resultado = (Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString();
-
-                }
-                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al dividir Double con String.";
-                }
-
-                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) / Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] / Convert.ToDouble(number2)).ToString();
-
-                }
-
-                //ints
-                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al dividir Int con String.";
-                }
-
-                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
-                {
-                    resultado = (Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) / Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] / Convert.ToDouble(number2)).ToString();
-
-                }
-
-                //chars 
-
-                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al dividir Char con String.";
-                }
-
-                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
-                {
-                    resultado = (Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]) / Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0])).ToString();
-
-                }
-
-                // string
-                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al dividir String con String.";
-                }
-                #endregion
-            }
-            else if (Operacion.Equals("porcentaje"))
-            {
-                #region PORCENTAJE
-
-                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
-                {
-                    resultado = "Error tipo dato al sacar residuo de  Boolean con Boolean.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 % Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 % Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 % Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 % Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-
-                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al sacar residuo de  Boolean con String.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (1 % Convert.ToDouble(number2)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 % Convert.ToDouble(number2)).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (1 % Convert.ToDouble(number1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (0 % Convert.ToDouble(number1)).ToString();
-                    }
-
-                }
-                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
-                {
-                    resultado = "Error tipo dato al sacar residuo de  Boolean con char.";
-                }
-
-
-                //doubles 
-
-                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
-                {
-                    resultado = (Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString();
-
-                }
-                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al sacar residuo de  Double con String.";
-                }
-
-                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
-                {
-                    resultado = (Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) % Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] % Convert.ToDouble(number2)).ToString();
-
-                }
-
-                //ints
-                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al sacar residuo de  Int con String.";
-                }
-
-                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
-                {
-                    resultado = (Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString();
-
-                }
-                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
-                {
-                    resultado = (Convert.ToDouble(number1) % Encoding.ASCII.GetBytes(number2)[0]).ToString();
-
-                }
-                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
-                {
-                    resultado = (Encoding.ASCII.GetBytes(number1)[0] % Convert.ToDouble(number2)).ToString();
-
-                }
-
-                //chars 
-
-                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al sacar residuo de  Char con String.";
-                }
-
-                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
-                {
-                    resultado = (Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]) % Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0])).ToString();
-
-                }
-
-                // string
-                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al sacar residuo de String con String.";
-                }
-                #endregion
-            }
-            else if (Operacion.Equals("potencia"))
-            {
-                #region POTENCIA
-
-                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
-                {
-                    resultado = "Error tipo dato al elevar de Boolean con Boolean.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (Math.Pow(1, Convert.ToDouble(number2))).ToString();
-                    }
-                    else
-                    {
-                        resultado = (Math.Pow(0, Convert.ToDouble(number2))).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (Math.Pow(Convert.ToDouble(number1), 1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (Math.Pow(Convert.ToDouble(number1), 0)).ToString();
-                    }
-
-                }
-
-                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al elevar de Boolean con String.";
-                }
-
-                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number1))
-                    {
-                        resultado = (Math.Pow(1, Convert.ToDouble(number2))).ToString();
-                    }
-                    else
-                    {
-                        resultado = (Math.Pow(0, Convert.ToDouble(number2))).ToString();
-                    }
-
-                }
-                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
-                {
-                    if (Convert.ToBoolean(number2))
-                    {
-                        resultado = (Math.Pow(Convert.ToDouble(number1), 1)).ToString();
-                    }
-                    else
-                    {
-                        resultado = (Math.Pow(Convert.ToDouble(number1), 0)).ToString();
-                    }
-
-                }
-                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
-                {
-                    resultado = "Error tipo dato al elevar de Boolean con char.";
-                }
-
-
-                //doubles 
-
-                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString();
-
-                }
-                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al elevar de Double con char.";
-                }
-
-                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString();
-
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString();
-
-                }
-                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0]))).ToString();
-                }
-                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]), Convert.ToDouble(number2))).ToString();
-
-                }
-
-                //ints
-                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al elevar de Int con String.";
-                }
-
-                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString();
-
-                }
-                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0]))).ToString();
-
-                }
-                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
-                {
-                    resultado = (Math.Pow(Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]), Convert.ToDouble(number2))).ToString();
-
-                }
-
-                //chars 
-
-                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al elevar de Char con String.";
-                }
-
-                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
-                {
-                    resultado = Math.Pow(Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]), Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0])).ToString();
-
-                }
-
-                // string
-                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
-                {
-                    resultado = "Error tipo dato al elevar de String con String.";
-                }
-                #endregion
-            }
-
-            return resultado;
-        }
-
-        /*
-        #region TIPODATO
-        public static String getTipodeDato(String Dato)
-        {
-            String Tipodato = "";
-            try
-            {
-                Convert.ToDouble(Dato);
-                Tipodato = "double";
-
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    Convert.ToInt32(Dato);
-                    Tipodato = "int";
-                }
-                catch (Exception)
-                {
-                    try
-                    {
-                        Convert.ToBoolean(Dato);
-                        Tipodato = "boolean";
-
-                    }
-                    catch (Exception)
-                    {
-                        try
-                        {
-                            Convert.ToChar(Dato);
-                            Tipodato = "char";
-                        }
-                        catch (Exception)
-                        {
-                            try
-                            {
-
-                                Convert.ToString(Dato);
-                                Tipodato = "string";
-                            }
-                            catch (Exception)
-                            {
-                                Console.WriteLine("Tipo de dato no Reconocido.");
-                            }
-                        }
-                    }
-                }
-            }
-            return Tipodato;
-        }
-
-        public static String getTipodeDato2(ParseTreeNode Nodo)
-        {
-            String Tipodato = "";
-            
-            
-           switch (Nodo.Term.Name.ToString())
-           {
-               case "OPERACION":
-               case "OPERACIONES1":
-               case "OPERACIONES2":
-               case "OPERACIONES3":
-               case "OPERACIONES4":
-               case "OPERACIONES5":
-               case "OPERACIONES6":
-               case "OPERACIONES7":
-
-                   for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                   {
-                       Tipodato = getTipodeDato2(Nodo.ChildNodes[i]);
-                   }
-                   break;
-
-               case "Entero":
-                   Tipodato = "int";
-                   break;
-               case "Decimal":
-                   Tipodato = "double";
-                   break;
-               case "Cadena":
-                   Tipodato = "string";
-                   break;
-               case "true":
-               case "false":
-                   Tipodato = "boolean";
-                   break;
-
-               case "Id":      //verificacion que el id exista y tenga valor
-
-                   for (int i = 0; i < Amb.Count; i++)
-                   {
-                       Ambitos simb = (Ambitos)Amb[i];
-                       if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                       {
-                           List<Simbolos> si = simb.getSimbolos();
-                           for (int j = 0; j < si.Count; j++)
-                           {
-                               Simbolos yeah = (Simbolos)si[j];
-                               if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                               {
-                                   Tipodato = yeah.GetTipo().ToLower();
-
-                               }
-                           }
-                       }
-                   }
-                   break;
-           }
-            return Tipodato;
-        }
-        #endregion
-
-        #region OPERACION
-        public static String Operaciones(ParseTreeNode Nodo)
-        {
-            String resultado = "";
-            try
-            {
-                string number1 = "";
-                string number2 = "";
-                String tipodato1 = "";
-                String tipodato2 = "";
-                //double number1 = 0.0;
-                //double number2 = 0.0;
-
-                switch (Nodo.Term.Name.ToString())
-                {
-                    case "OPERACION":
-                        // OPERACIONES = OPERACIONES + OPEREACIONES1 | OPERACIONES1
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-
-                                    tipodato1 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number1 = Operaciones(Nodo.ChildNodes[i]);
-                                }
-                                else if (i == 2)
-                                {
-                                    tipodato2 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number2 = (Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = operacionSeguntipos(tipodato1, tipodato2, number1, number2, "suma");
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-                        }
-                        break;
-
-                    case "OPERACIONES1":
-                        // OPERACIONES1 = OPERACIONES1 - OPEREACIONES2 | OP0ERACIONES2
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    tipodato1 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number1 = Operaciones(Nodo.ChildNodes[i]);
-                                }
-                                else if (i == 2)
-                                {
-                                    tipodato2 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number2 = (Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = operacionSeguntipos(tipodato1, tipodato2, number1, number2, "resta");
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES2":
-                        // OPERACIONES2 = OPERACIONES2 * OPEREACIONES3 | OPERACIONES3
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    tipodato1 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number1 = Operaciones(Nodo.ChildNodes[i]);
-                                }
-                                else if (i == 2)
-                                {
-                                    tipodato2 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number2 = (Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = operacionSeguntipos(tipodato1, tipodato2, number1, number2, "multiplicacion");
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES3":
-                        // OPERACIONES3 = OPERACIONES3 / OPEREACIONES4 | OPERACIONES4
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    tipodato1 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number1 = Operaciones(Nodo.ChildNodes[i]);
-                                }
-                                else if (i == 2)
-                                {
-                                    tipodato2 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number2 = (Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = operacionSeguntipos(tipodato1, tipodato2, number1, number2, "division");
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES4":
-                        // OPERACIONES4 = OPERACIONES4 % OPEREACIONES5 | OPERACIONES5
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    tipodato1 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number1 = Operaciones(Nodo.ChildNodes[i]);
-                                }
-                                else if (i == 2)
-                                {
-                                    tipodato2 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number2 = (Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = operacionSeguntipos(tipodato1, tipodato2, number1, number2, "porcentaje");
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES5":
-                        // OPERACIONES5 = OPERACIONES5 ^ OPEREACIONES6 | OPERACIONEES6
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    tipodato1 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number1 = Operaciones(Nodo.ChildNodes[i]);
-                                }
-                                else if (i == 2)
-                                {
-                                    tipodato2 = getTipodeDato(Operaciones(Nodo.ChildNodes[i]));
-                                    number2 = (Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = operacionSeguntipos(tipodato1, tipodato2, number1, number2, "potencia");
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES6":
-                        //OPERACIONES6 = - OPEREACIONES7 | OPERACIONES7
-                        if (Nodo.ChildNodes.Count == 2)
-                        {
-                            resultado = "-" + Operaciones(Nodo.ChildNodes[1]);
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-                        }
-                        break;
-                    case "OPERACIONES7":
-
-                        if (Nodo.ChildNodes.Count == 3)     //vienen parentesis entonces por precedencia se hara primero
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[1]);
-                        }
-                        else if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("LLAMADA"))
-                        {
-                            String idenasignacion = IdVariable;         //CAPTURO A VARIABLE PORQUE COMO CUANDO ESTA ASIGNACNO Y LLAMA A METODO SE PIERDE EL NOMBRE DE LA VARIABLE QUE ESTA ASIGNANDO
-                            EjecucionCodigo(Nodo.ChildNodes[0], AmbitoVariable, Nivel);
-                            resultado = Returnmetodo;
-                            IdVariable = idenasignacion;
-                            Yasedetubo = false;
-                        }
-                        else if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("CONDICIONES"))
-                        {
-                            resultado = Condiciones(Nodo.ChildNodes[0]);
-                        }
-                        else if (Nodo.ChildNodes.Count == 4)
-                        {
-                            String id = Tipos_Y_Id(Nodo.ChildNodes[0]);        //recibira el id
-                            String posisicon = Operaciones(Nodo.ChildNodes[2]);
-
-                            for (int i = 0; i < Amb.Count; i++)
-                            {
-                                Ambitos simb = (Ambitos)Amb[i];
-                                if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                                {
-                                    List<Simbolos> si = simb.getSimbolos();
-                                    for (int j = 0; j < si.Count; j++)
-                                    {
-                                        Simbolos yeah = (Simbolos)si[j];
-                                        if (yeah.GetId().Equals(id) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                        {
-                                            if (yeah.GetEsArreglo())
-                                            {
-                                                String[] Arreglo = yeah.GetValores();
-                                                resultado = Arreglo[Convert.ToInt32(posisicon)];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-                        }
-                        break;
-
-                    case "Entero":
-                    case "Decimal":
-                    case "Cadena":
-                    case "true":
-                    case "false":
-                        resultado = Nodo.Token.Value.ToString();
-                        break;
-
-                    case "Id":      //verificacion que el id exista y tenga valor
-
-                        for (int i = 0; i < Amb.Count; i++)
-                        {
-                            Ambitos simb = (Ambitos)Amb[i];
-                            if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                            {
-                                List<Simbolos> si = simb.getSimbolos();
-                                for (int j = 0; j < si.Count; j++)
-                                {
-                                    Simbolos yeah = (Simbolos)si[j];
-                                    if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                    {
-                                        resultado = yeah.GetValor();
-
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                }
-                return resultado;
-            }
-            catch (Exception e)
-            {
-                resultado = "Error Semantico de tipo de datos.";
-                return resultado;
-            }
-        }
-        #endregion*/
-
-        public static String Tipo(ParseTreeNode Nodo)
-        {
-            string Tipodato = "";
-
-            switch (Nodo.Term.Name.ToString())
-            {
-                case "OPERACION":
-                case "OPERACIONES1":
-                case "OPERACIONES2":
-                case "OPERACIONES3":
-                case "OPERACIONES4":
-                case "OPERACIONES5":
-                case "OPERACIONES6":
-                case "OPERACIONES7":
-
-                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                    {
-                        Tipodato = Tipo(Nodo.ChildNodes[i]);
-                    }
-                    break;
-
-                case "Entero":
-                    Tipodato = "int";
-                    break;
-                case "Decimal":
-                    Tipodato = "double";
-                    break;
-                case "Cadena":
-                    Tipodato = "string";
-                    break;
-                case "Char":
-                    Tipodato = "char";
-                    break;
-                case "true":
-                case "false":
-                    Tipodato = "boolean";
-                    break;
-
-                case "Id":      //verificacion que el id exista y tenga valor
-
-                    for (int i = 0; i < Amb.Count; i++)
-                    {
-                        Ambitos simb = (Ambitos)Amb[i];
-                        if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                        {
-                            List<Simbolos> si = simb.getSimbolos();
-                            for (int j = 0; j < si.Count; j++)
-                            {
-                                Simbolos yeah = (Simbolos)si[j];
-                                if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                {
-                                    Tipodato = yeah.GetTipo().ToLower();
-
-                                }
-                            }
-                        }
-                    }
-                    break;
-            }
-            return Tipodato;
-        }
-
-
-        //solo concatenacion
-       /* public static String Operaciones(ParseTreeNode Nodo)
-        {
-            String resultado = "";
-            try
-            {
-                double number1 = 0.0;
-                double number2 = 0.0;
-
-                switch (Nodo.Term.Name.ToString())
-                {
-                    case "OPERACION":
-                        // OPERACIONES = OPERACIONES + OPEREACIONES1 | OPERACIONES1
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            string nu1 = "";
-                            string nu2 = "";
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    try
-                                    {
-                                        number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                    }
-                                    catch (Exception)
-                                    {
-                                        nu1 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                                else if (i == 2)
-                                {
-                                    try
-                                    {
-                                        number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                    }
-                                    catch (Exception)
-                                    {
-                                        nu2 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                            }
-
-                            if (nu1.Equals("") && nu2.Equals(""))
-                            {
-                                resultado = (number1 + number2).ToString();
-                            }
-                            else if (nu1.Equals("") && !nu2.Equals(""))
-                            {
-                                resultado = (number1 + nu2).ToString();
-                            }
-                            else if (nu2.Equals("") && !nu1.Equals(""))
-                            {
-                                resultado = (nu1 + number2).ToString();
-                            }
-                            else
-                            {
-                                resultado = (nu1 + nu2).ToString();
-                            }
-
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES1":
-                        // OPERACIONES1 = OPERACIONES1 - OPEREACIONES2 | OP0ERACIONES2
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                                else if (i == 2)
-                                {
-                                    number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = (number1 - number2).ToString();
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES2":
-                        // OPERACIONES2 = OPERACIONES2 * OPEREACIONES3 | OPERACIONES3
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                                else if (i == 2)
-                                {
-                                    number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = (number1 * number2).ToString();
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES3":
-                        // OPERACIONES3 = OPERACIONES3 / OPEREACIONES4 | OPERACIONES4
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                                else if (i == 2)
-                                {
-                                    number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = number1 / number2 + "";
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES4":
-                        // OPERACIONES4 = OPERACIONES4 % OPEREACIONES5 | OPERACIONES5
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                                else if (i == 2)
-                                {
-                                    number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = (number1 % number2) + "";
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES5":
-                        // OPERACIONES5 = OPERACIONES5 ^ OPEREACIONES6 | OPERACIONEES6
-                        if (Nodo.ChildNodes.Count == 3)
-                        {
-                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                                else if (i == 2)
-                                {
-                                    number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                }
-                            }
-                            resultado = Math.Pow(number1, number2) + "";
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                        }
-                        break;
-                    case "OPERACIONES6":
-                        //OPERACIONES6 = - OPEREACIONES7 | OPERACIONES7
-                        if (Nodo.ChildNodes.Count == 2)
-                        {
-                            resultado = "-" + Operaciones(Nodo.ChildNodes[1]);
-                            return resultado;
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-                        }
-                        break;
-                    case "OPERACIONES7":
-                        // OPERACIONES7.Rule = Entero
-                        //      | Decimal
-                        //    | Id
-                        //  | Id + tkCORA + OPERACION + tkCORC       //acceso a una posicion de un arreglo
-                        //| Cadena
-                        //| LLAMADA                                //llamada a un metodo
-                        //| tkGETUSER + tkPARA + tkPARC            //funcion privada  que devuelde el usuario logeado
-                        //| tkPARA + OPERACION + tkPARC
-                        if (Nodo.ChildNodes.Count == 3)     //vienen parentesis entonces por precedencia se hara primero
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[1]);
-                        }
-                        else if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("LLAMADA"))
-                        {
-                            String idenasignacion = IdVariable;         //CAPTURO A VARIABLE PORQUE COMO CUANDO ESTA ASIGNACNO Y LLAMA A METODO SE PIERDE EL NOMBRE DE LA VARIABLE QUE ESTA ASIGNANDO
-                            EjecucionCodigo(Nodo.ChildNodes[0], AmbitoVariable, Nivel);
-                            resultado = Returnmetodo;
-                            IdVariable = idenasignacion;
-                            Yasedetubo = false;
-                        }
-                        else if (Nodo.ChildNodes.Count == 4)
-                        {
-                            String id = Tipos_Y_Id(Nodo.ChildNodes[0]);        //recibira el id
-                            String posisicon = Operaciones(Nodo.ChildNodes[2]);
-
-                            for (int i = 0; i < Amb.Count; i++)
-                            {
-                                Ambitos simb = (Ambitos)Amb[i];
-                                if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                                {
-                                    List<Simbolos> si = simb.getSimbolos();
-                                    for (int j = 0; j < si.Count; j++)
-                                    {
-                                        Simbolos yeah = (Simbolos)si[j];
-                                        if (yeah.GetId().Equals(id) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                        {
-                                            if (yeah.GetEsArreglo())
-                                            {
-                                                String[] Arreglo = yeah.GetValores();
-                                                resultado = Arreglo[Convert.ToInt32(posisicon)];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            resultado = Operaciones(Nodo.ChildNodes[0]);
-                        }
-                        break;
-
-                    case "Entero":
-                    case "Decimal":
-                    case "Cadena":
-                    case "true":
-                    case "false":
-                        resultado = Nodo.Token.Value.ToString();
-                        break;
-
-                    case "Id":      //verificacion que el id exista y tenga valor
-
-                        for (int i = 0; i < Amb.Count; i++)
-                        {
-                            Ambitos simb = (Ambitos)Amb[i];
-                            if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                            {
-                                List<Simbolos> si = simb.getSimbolos();
-                                for (int j = 0; j < si.Count; j++)
-                                {
-                                    Simbolos yeah = (Simbolos)si[j];
-                                    if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                    {
-                                        resultado = yeah.GetValor();
-
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                }
-                return resultado;
-            }
-            catch (Exception e)
-            {
-                resultado = "Error Semantico de tipo de datos.";
-                return resultado;
-            }
-        }
-        */
-        //operaciones sin nimierda de validaciones semanticas
-        /*
-                
-                #region OPERACION SIN VALIDACIONES
-                public static String Operaciones(ParseTreeNode Nodo)
-                {
-                    String resultado = "";
-                    try
-                    {
-                        double number1 = 0.0;
-                        double number2 = 0.0;
-
-                        switch (Nodo.Term.Name.ToString())
-                        {
-                            case "OPERACION":
-                                // OPERACIONES = OPERACIONES + OPEREACIONES1 | OPERACIONES1
-                                if (Nodo.ChildNodes.Count == 3)
-                                {
-                                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                        else if (i == 2)
-                                        {
-                                            number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                    }
-                                    resultado = (number1 + number2).ToString();
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                                }
-                                break;
-                            case "OPERACIONES1":
-                                // OPERACIONES1 = OPERACIONES1 - OPEREACIONES2 | OP0ERACIONES2
-                                if (Nodo.ChildNodes.Count == 3)
-                                {
-                                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                        else if (i == 2)
-                                        {
-                                            number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                    }
-                                    resultado = (number1 - number2).ToString();
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                                }
-                                break;
-                            case "OPERACIONES2":
-                                // OPERACIONES2 = OPERACIONES2 * OPEREACIONES3 | OPERACIONES3
-                                if (Nodo.ChildNodes.Count == 3)
-                                {
-                                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                        else if (i == 2)
-                                        {
-                                            number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                    }
-                                    resultado = (number1 * number2).ToString();
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                                }
-                                break;
-                            case "OPERACIONES3":
-                                // OPERACIONES3 = OPERACIONES3 / OPEREACIONES4 | OPERACIONES4
-                                if (Nodo.ChildNodes.Count == 3)
-                                {
-                                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                        else if (i == 2)
-                                        {
-                                            number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                    }
-                                    resultado = number1 / number2 + "";
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                                }
-                                break;
-                            case "OPERACIONES4":
-                                // OPERACIONES4 = OPERACIONES4 % OPEREACIONES5 | OPERACIONES5
-                                if (Nodo.ChildNodes.Count == 3)
-                                {
-                                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                        else if (i == 2)
-                                        {
-                                            number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                    }
-                                    resultado = (number1 % number2) + "";
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                                }
-                                break;
-                            case "OPERACIONES5":
-                                // OPERACIONES5 = OPERACIONES5 ^ OPEREACIONES6 | OPERACIONEES6
-                                if (Nodo.ChildNodes.Count == 3)
-                                {
-                                    for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                    {
-                                        if (i == 0)
-                                        {
-                                            number1 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                        else if (i == 2)
-                                        {
-                                            number2 = Convert.ToDouble(Operaciones(Nodo.ChildNodes[i]));
-                                        }
-                                    }
-                                    resultado = Math.Pow(number1, number2) + "";
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                                }
-                                break;
-                            case "OPERACIONES6":
-                                //OPERACIONES6 = - OPEREACIONES7 | OPERACIONES7
-                                if (Nodo.ChildNodes.Count == 2)
-                                {
-                                    resultado = "-" + Operaciones(Nodo.ChildNodes[1]);
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-                                }
-                                break;
-                            case "OPERACIONES7":
-                                // OPERACIONES7.Rule = Entero
-                                //      | Decimal
-                                //      | Id
-                                //      | Id + tkCORA + OPERACION + tkCORC       //acceso a una posicion de un arreglo
-                                //      | Cadena
-                                //      | LLAMADA                                //llamada a un metodo
-                                //      | tkGETUSER + tkPARA + tkPARC            //funcion privada  que devuelde el usuario logeado
-                                //      | tkPARA + OPERACION + tkPARC
-                                if (Nodo.ChildNodes.Count == 3)     //vienen parentesis entonces por precedencia se hara primero
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[1]);
-                                }
-                                else if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("LLAMADA"))
-                                {
-                                    String idenasignacion = IdVariable;         //CAPTURO A VARIABLE PORQUE COMO CUANDO ESTA ASIGNACNO Y LLAMA A METODO SE PIERDE EL NOMBRE DE LA VARIABLE QUE ESTA ASIGNANDO
-                                    EjecucionCodigo(Nodo.ChildNodes[0], AmbitoVariable, Nivel);
-                                    resultado = Returnmetodo;
-                                    IdVariable = idenasignacion;
-                                    Yasedetubo = false;
-                                }
-                                else if (Nodo.ChildNodes.Count == 4)
-                                {
-                                    String id = Tipos_Y_Id(Nodo.ChildNodes[0]);        //recibira el id
-                                    String posisicon = Operaciones(Nodo.ChildNodes[2]);
-
-                                    for (int i = 0; i < Amb.Count; i++)
-                                    {
-                                        Ambitos simb = (Ambitos)Amb[i];
-                                        if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                                        {
-                                            List<Simbolos> si = simb.getSimbolos();
-                                            for (int j = 0; j < si.Count; j++)
-                                            {
-                                                Simbolos yeah = (Simbolos)si[j];
-                                                if (yeah.GetId().Equals(id) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                                {
-                                                    if (yeah.GetEsArreglo())
-                                                    {
-                                                        String[] Arreglo = yeah.GetValores();
-                                                        resultado = Arreglo[Convert.ToInt32(posisicon)];
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    resultado = Operaciones(Nodo.ChildNodes[0]);
-                                }
-                                break;
-
-                            case "Entero":
-                            case "Decimal":
-                            case "Cadena":
-                            case "true":
-                            case "false":
-                                resultado = Nodo.Token.Value.ToString();
-                                break;
-
-                            case "Id":      //verificacion que el id exista y tenga valor
-
-                                for (int i = 0; i < Amb.Count; i++)
-                                {
-                                    Ambitos simb = (Ambitos)Amb[i];
-                                    if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                                    {
-                                        List<Simbolos> si = simb.getSimbolos();
-                                        for (int j = 0; j < si.Count; j++)
-                                        {
-                                            Simbolos yeah = (Simbolos)si[j];
-                                            if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                            {
-                                                resultado = yeah.GetValor();
-
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                        return resultado;
-                    }
-                    catch (Exception e)
-                    {
-                        resultado = "Error Semantico de tipo de datos.";
-                        return resultado;
-                    }
-                }
-
-                #endregion
-              */
-
-        // ya con tabla de validaciones
-    
-            public static String Operaciones(ParseTreeNode Nodo)
-            {
-                String resultado = "";
-                try
-                {
-                    string number1 = "";
-                    string number2 = "";
-
-                    switch (Nodo.Term.Name.ToString())
-                    {
-                        case "OPERACION":
-                            // OPERACIONES = OPERACIONES + OPEREACIONES1 | OPERACIONES1
-                            if (Nodo.ChildNodes.Count == 3)
-                            {
-                                string t1 = "";
-                                string t2 = "";
-                                for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                {
-                                    if (i == 0)
-                                    {
-                                        t1 = Tipo(Nodo.ChildNodes[i]);
-                                        number1 = Operaciones(Nodo.ChildNodes[i]);
-
-                                    }
-                                    else if (i == 2)
-                                    {
-                                        t2 = Tipo(Nodo.ChildNodes[i]);
-                                        number2 = Operaciones(Nodo.ChildNodes[i]);
-
-                                    }
-                                }
-                                if (!t1.Equals("") && !t2.Equals("")) { resultado = operacionSeguntipos(t1, t2, number1.ToString(), number2.ToString(), "suma"); }
-                                else
-                                {
-                                    number1 = Operaciones(Nodo.ChildNodes[0]);
-                                    number2 = Operaciones(Nodo.ChildNodes[2]);
-
-                                    resultado = (Convert.ToDouble(number1)+ Convert.ToDouble(number2)).ToString();
-                                }
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                            }
-                            break;
-                        case "OPERACIONES1":
-                            // OPERACIONES1 = OPERACIONES1 - OPEREACIONES2 | OP0ERACIONES2
-                            if (Nodo.ChildNodes.Count == 3)
-                            {
-                                string t3 = "";
-                                string t4 = "";
-                                for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                {
-                                    if (i == 0)
-                                    {
-                                        t3 = Tipo(Nodo.ChildNodes[i]);
-                                        number1 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                    else if (i == 2)
-                                    {
-                                        t4 = Tipo(Nodo.ChildNodes[i]);
-                                        number2 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                                if (!t3.Equals("") && !t4.Equals("")) { resultado = operacionSeguntipos(t3, t4, number1.ToString(), number2.ToString(), "resta"); }
-                                else
-                                {
-                                    number1 = Operaciones(Nodo.ChildNodes[0]);
-                                    number2 = Operaciones(Nodo.ChildNodes[2]);
-
-                                    resultado = (Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString();
-                                }
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                            }
-                            break;
-                        case "OPERACIONES2":
-                            // OPERACIONES2 = OPERACIONES2 * OPEREACIONES3 | OPERACIONES3
-                            if (Nodo.ChildNodes.Count == 3)
-                            {
-                                string t5 = "";
-                                string t6 = "";
-                                for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                {
-                                    if (i == 0)
-                                    {
-                                        t5 = Tipo(Nodo.ChildNodes[i]);
-                                        number1 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                    else if (i == 2)
-                                    {
-                                        t6 = Tipo(Nodo.ChildNodes[i]);
-                                        number2 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                                resultado = operacionSeguntipos(t5, t6, number1.ToString(), number2.ToString(), "multiplicacion");
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-                            }
-                            break;
-                        case "OPERACIONES3":
-                            // OPERACIONES3 = OPERACIONES3 / OPEREACIONES4 | OPERACIONES4
-                            if (Nodo.ChildNodes.Count == 3)
-                            {
-                                string t7 = "";
-                                string t8 = "";
-                                for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                {
-                                    if (i == 0)
-                                    {
-                                        t7 = Tipo(Nodo.ChildNodes[i]);
-                                        number1 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                    else if (i == 2)
-                                    {
-                                        t8 = Tipo(Nodo.ChildNodes[i]);
-                                        number2 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                                resultado = operacionSeguntipos(t7, t8, number1.ToString(), number2.ToString(), "division");
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                            }
-                            break;
-                        case "OPERACIONES4":
-                            // OPERACIONES4 = OPERACIONES4 % OPEREACIONES5 | OPERACIONES5
-                            if (Nodo.ChildNodes.Count == 3)
-                            {
-                                string t9 = "";
-                                string t10 = "";
-                                for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                {
-                                    if (i == 0)
-                                    {
-                                        t9 = Tipo(Nodo.ChildNodes[i]);
-                                        number1 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                    else if (i == 2)
-                                    {
-                                        t10 = Tipo(Nodo.ChildNodes[i]);
-                                        number2 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                                resultado = operacionSeguntipos(t9, t10, number1.ToString(), number2.ToString(), "porcentaje");
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                            }
-                            break;
-                        case "OPERACIONES5":
-                            // OPERACIONES5 = OPERACIONES5 ^ OPEREACIONES6 | OPERACIONEES6
-                            if (Nodo.ChildNodes.Count == 3)
-                            {
-                                string t10 = "";
-                                string t11 = "";
-                                for (int i = 0; i < Nodo.ChildNodes.Count; i++)
-                                {
-                                    if (i == 0)
-                                    {
-                                        t10 = Tipo(Nodo.ChildNodes[i]);
-                                        number1 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                    else if (i == 2)
-                                    {
-                                        t11 = Tipo(Nodo.ChildNodes[i]);
-                                        number2 = Operaciones(Nodo.ChildNodes[i]);
-                                    }
-                                }
-                                resultado = operacionSeguntipos(t10, t11, number1.ToString(), number2.ToString(), "potencia");
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-
-                            }
-                            break;
-                        case "OPERACIONES6":
-                            //OPERACIONES6 = - OPEREACIONES7 | OPERACIONES7
-                            if (Nodo.ChildNodes.Count == 2)
-                            {
-                                //string t12 = "";
-                                //t12 = Tipo(Nodo.ChildNodes[1]);
-
-                                resultado = "-" + Operaciones(Nodo.ChildNodes[1]);
-                                return resultado;
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-                            }
-                            break;
-                        case "OPERACIONES7":
-                            // OPERACIONES7.Rule = Entero
-                            //      | Decimal
-                            //      | Id
-                            //      | Id + tkCORA + OPERACION + tkCORC       //acceso a una posicion de un arreglo
-                            //      | Cadena
-                            //      | LLAMADA                                //llamada a un metodo
-                            //      | tkGETUSER + tkPARA + tkPARC            //funcion privada  que devuelde el usuario logeado
-                            //      | tkPARA + OPERACION + tkPARC
-                            if (Nodo.ChildNodes.Count == 3)     //vienen parentesis entonces por precedencia se hara primero
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[1]);
-                            }
-                            else if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("LLAMADA"))
-                            {
-                                //Operaciones1(Nodo);
-                                String idenasignacion = IdVariable;         //CAPTURO A VARIABLE PORQUE COMO CUANDO ESTA ASIGNACNO Y LLAMA A METODO SE PIERDE EL NOMBRE DE LA VARIABLE QUE ESTA ASIGNANDO
-                                EjecucionCodigo(Nodo.ChildNodes[0], AmbitoVariable, Nivel);
-                                resultado = Returnmetodo;
-                                IdVariable = idenasignacion;
-                                Yasedetubo = false;
-                            }
-                            else if (Nodo.ChildNodes.Count == 4)
-                            {
-                                String id = Tipos_Y_Id(Nodo.ChildNodes[0]);        //recibira el id
-                                String posisicon = Operaciones(Nodo.ChildNodes[2]);
-
-                                for (int i = 0; i < Amb.Count; i++)
-                                {
-                                    Ambitos simb = (Ambitos)Amb[i];
-                                    if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                                    {
-                                        List<Simbolos> si = simb.getSimbolos();
-                                        for (int j = 0; j < si.Count; j++)
-                                        {
-                                            Simbolos yeah = (Simbolos)si[j];
-                                            if (yeah.GetId().Equals(id) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                            {
-                                                if (yeah.GetEsArreglo())
-                                                {
-                                                    String[] Arreglo = yeah.GetValores();
-                                                    resultado = Arreglo[Convert.ToInt32(posisicon)];
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                resultado = Operaciones(Nodo.ChildNodes[0]);
-                            }
-                            break;
-
-                        case "Entero":
-                        case "Decimal":
-                        case "Cadena":
-                        case "Char":
-                        case "true":
-                        case "false":
-                            resultado = Nodo.Token.Value.ToString();
-                            break;
-
-                        case "Id":      //verificacion que el id exista y tenga valor
-
-                            for (int i = 0; i < Amb.Count; i++)
-                            {
-                                Ambitos simb = (Ambitos)Amb[i];
-                                if (simb.getNivel() == Nivel || simb.getNivel() == 0)
-                                {
-                                    List<Simbolos> si = simb.getSimbolos();
-                                    for (int j = 0; j < si.Count; j++)
-                                    {
-                                        Simbolos yeah = (Simbolos)si[j];
-                                        if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
-                                        {
-                                            resultado = yeah.GetValor();
-
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                    return resultado;
-                }
-                catch (Exception e)
-                {
-                    resultado = "Error Semantico de tipo de datos.";
-                    return resultado;
-                }
-            }
-            
-
-        public static String Condiciones(ParseTreeNode Nodo)
-        {
-            String resultado = "";
-            String Condicion1 = "";
-            String Condicion2 = "";
+            Retorno resultado = new Retorno("", "");
+            Retorno Condicion1 = null;
+            Retorno Condicion2 = null;
 
             switch (Nodo.Term.Name.ToString())
             {
@@ -3234,8 +1050,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Condicion1.Equals(Condicion2)) resultado = "true";
-                        else resultado = "false";
+                        if (Condicion1.getValor().Equals(Condicion2.getValor())) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3262,8 +1078,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (!Condicion1.Equals(Condicion2)) resultado = "true";
-                        else resultado = "false";
+                        if (!Condicion1.getValor().Equals(Condicion2.getValor())) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3289,8 +1105,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Convert.ToDouble(Condicion1) >= Convert.ToDouble(Condicion2)) resultado = "true";
-                        else resultado = "false";
+                        if (Convert.ToDouble(Condicion1.getValor()) >= Convert.ToDouble(Condicion2.getValor())) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3316,8 +1132,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Convert.ToDouble(Condicion1) <= Convert.ToDouble(Condicion2)) resultado = "true";
-                        else resultado = "false";
+                        if (Convert.ToDouble(Condicion1.getValor()) <= Convert.ToDouble(Condicion2.getValor())) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3343,8 +1159,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Convert.ToDouble(Condicion1) > Convert.ToDouble(Condicion2)) resultado = "true";
-                        else resultado = "false";
+                        if (Convert.ToDouble(Condicion1.getValor()) > Convert.ToDouble(Condicion2.getValor())) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3371,8 +1187,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Convert.ToDouble(Condicion1) < Convert.ToDouble(Condicion2)) resultado = "true";
-                        else resultado = "false";
+                        if (Convert.ToDouble(Condicion1.getValor()) < Convert.ToDouble(Condicion2.getValor())) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3399,8 +1215,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Condicion1.Equals("true") || Condicion2.Equals("true")) resultado = "true";
-                        else resultado = "false";
+                        if (Condicion1.getValor().Equals("true") || Condicion2.getValor().Equals("true")) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3426,16 +1242,16 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Condicion1.Equals("true") && Condicion2.Equals("false"))
+                        if (Condicion1.getValor().Equals("true") && Condicion2.getValor().Equals("false"))
                         {
-                            resultado = "true";
+                            resultado.setValor("true");
 
                         }
-                        else if (Condicion1.Equals("false") && Condicion2.Equals("true"))
+                        else if (Condicion1.getValor().Equals("false") && Condicion2.getValor().Equals("true"))
                         {
-                            resultado = "true";
+                            resultado.setValor("true");
                         }
-                        else { resultado = "false"; }
+                        else { resultado.setValor("false"); }
 
                         return resultado;
                     }
@@ -3462,8 +1278,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Condicion1.Equals("true") && Condicion2.Equals("true")) resultado = "true";
-                        else resultado = "false";
+                        if (Condicion1.getValor().Equals("true") && Condicion2.getValor().Equals("true")) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         return resultado;
                     }
@@ -3485,8 +1301,8 @@ namespace Proyecto2.Analisis
                             }
                         }
 
-                        if (Condicion1.Equals("true")) resultado = "false";
-                        else resultado = "true";
+                        if (Condicion1.getValor().Equals("true")) resultado.setValor("false");
+                        else resultado.setValor("true");
 
 
                         return resultado;
@@ -3499,8 +1315,7 @@ namespace Proyecto2.Analisis
 
                 case "CONDICIONES10":
                     /* CONDICIONES10.Rule = OPERACION
-                                | tkTRUE
-                                | tkFALSE
+                             
                                 | Id + tkPUNTO + tkCOMPARE + tkPARA + Cadena + tkPARC           //compare porque siempre devolvera un tru o un false
                                 | tkPARA + CONDICIONES + tkPARC*/
 
@@ -3510,10 +1325,6 @@ namespace Proyecto2.Analisis
                         {
                             resultado = Operaciones(Nodo.ChildNodes[0]);
                         }
-                        else
-                        {
-                            resultado = Nodo.ChildNodes[0].Token.Value.ToString();
-                        }
                     }
                     else if (Nodo.ChildNodes.Count == 3)
                     {
@@ -3521,11 +1332,11 @@ namespace Proyecto2.Analisis
                     }
                     else if (Nodo.ChildNodes.Count == 6)
                     {
-                        String variable = Operaciones(Nodo.ChildNodes[0]);      //capturo su valor
+                        Retorno variable = Operaciones(Nodo.ChildNodes[0]);      //capturo su valor
                         String cadena = Nodo.ChildNodes[4].Token.Value.ToString();
 
-                        if (variable.Equals(cadena)) resultado = "true";
-                        else resultado = "false";
+                        if (variable.getValor().Equals(cadena)) resultado.setValor("true");
+                        else resultado.setValor("false");
 
                         //Console.WriteLine("Entro a Compareto.");
                     }
@@ -3543,7 +1354,8 @@ namespace Proyecto2.Analisis
                                 Simbolos yeah = (Simbolos)si[j];
                                 if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && yeah.Getnivel() == Nivel)
                                 {
-                                    resultado = yeah.GetValor();
+                                    resultado.setValor(yeah.GetValor());
+                                    resultado.setTipo(yeah.GetTipo());
                                 }
                             }
                         }
@@ -3556,5 +1368,1258 @@ namespace Proyecto2.Analisis
             return resultado;
         }
 
+        public static Retorno operacionSeguntipos(String tipodato1, String tipodato2, String number1, String number2, String Operacion)
+        {
+            Retorno resultado = new Retorno("", "");
+
+            if (Operacion.Equals("suma"))
+            {
+                #region SUMA
+                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
+                {
+                    if (Convert.ToBoolean(number1) && Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor("2.0");
+                    }
+                    else if (!Convert.ToBoolean(number1) && Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor("1.0");
+                    }
+                    else if (Convert.ToBoolean(number1) && !Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor("2.0");
+                    }
+                    else if (!Convert.ToBoolean(number1) && !Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor("0.0");
+                    }
+                    resultado.setTipo("double");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 + Convert.ToDouble(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 + Convert.ToDouble(number2)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 + Convert.ToDouble(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 + Convert.ToDouble(number1)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+
+
+                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor(number1 + number2);
+                    resultado.setTipo("string");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 + Convert.ToInt32(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 + Convert.ToInt32(number2)).ToString());
+                    }
+                    resultado.setTipo("int");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 + Convert.ToInt32(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 + Convert.ToInt32(number1)).ToString());
+                    }
+                    resultado.setTipo("int");
+                }
+                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con Char.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con Char.");
+                }
+
+
+                //doubles 
+
+                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor(number1 + number2);
+                    resultado.setTipo("string");
+                }
+
+                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) + Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) + Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number2) + Encoding.ASCII.GetBytes(number1)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //ints
+                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor(number1 + number2);
+                    resultado.setTipo("string");
+                }
+
+                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
+                {
+                    resultado.setValor((Convert.ToInt32(number1) + Convert.ToInt32(number2)).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToInt32(number1) + Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToInt32(number2) + Encoding.ASCII.GetBytes(number1)[0]).ToString());
+                    resultado.setTipo("int");
+
+                }
+
+                //chars 
+
+                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor(number1 + number2);
+                    resultado.setTipo("string");
+                }
+
+                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor((Convert.ToInt32(Encoding.ASCII.GetBytes(number1)[0]) + Convert.ToInt32(Encoding.ASCII.GetBytes(number2)[0])).ToString());
+                    resultado.setTipo("int");
+
+                }
+
+                // string
+                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor(number1 + number2);
+                    resultado.setTipo("string");
+                }
+                #endregion}
+            }
+
+            else if (Operacion.Equals("resta"))
+            {
+                #region RESTA
+                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con Boolean.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con Boolean.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 - Convert.ToDouble(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 - Convert.ToDouble(number2)).ToString());
+                    }
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 - Convert.ToDouble(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 - Convert.ToDouble(number1)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+
+                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con String.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con String.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 - Convert.ToInt32(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 - Convert.ToInt32(number2)).ToString());
+                    }
+                    resultado.setTipo("int");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 - Convert.ToInt32(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 - Convert.ToInt32(number1)).ToString());
+                    }
+                    resultado.setTipo("int");
+                }
+                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con Char.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con Char.");
+                }
+
+                //doubles 
+
+                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) - Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Double con String.");
+                    resultado.setTipo("Error tipo dato al operar Double con String.");
+                }
+
+                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) - Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) - Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) - Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] - Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //ints
+                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Int con String.");
+                    resultado.setTipo("Error tipo dato al operar Int con String.");
+                }
+
+                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
+                {
+                    resultado.setValor((Convert.ToInt32(number1) - Convert.ToInt32(number2)).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToInt32(number1) - Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] - Convert.ToInt32(number2)).ToString());
+                    resultado.setTipo("int");
+
+                }
+
+                //chars 
+
+                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Char con String.");
+                    resultado.setTipo("Error tipo dato al operar Char con String.");
+                }
+
+                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor((Convert.ToInt32(Encoding.ASCII.GetBytes(number1)[0]) - Convert.ToInt32(Encoding.ASCII.GetBytes(number2)[0])).ToString());
+                    resultado.setTipo("int");
+                }
+
+                // string
+                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar String con String.");
+                    resultado.setTipo("Error tipo dato al operar String con String.");
+                }
+                #endregion
+            }
+            else if (Operacion.Equals("multiplicacion"))
+            {
+                #region MULTIPLICAICION
+                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con Boolean.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con Boolean.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 * Convert.ToDouble(number2)).ToString());
+                        resultado.setTipo("double");
+                    }
+                    else
+                    {
+                        resultado.setValor((0 * Convert.ToDouble(number2)).ToString());
+                        resultado.setTipo("double");
+                    }
+
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 * Convert.ToDouble(number1)).ToString());
+                        resultado.setTipo("double");
+                    }
+                    else
+                    {
+                        resultado.setValor((0 * Convert.ToDouble(number1)).ToString());
+                        resultado.setTipo("double");
+                    }
+
+                }
+
+                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con String.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con String.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 * Convert.ToInt32(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 * Convert.ToInt32(number2)).ToString());
+                    }
+                    resultado.setTipo("int");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 * Convert.ToInt32(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 * Convert.ToInt32(number1)).ToString());
+                    }
+                    resultado.setTipo("int");
+                }
+                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor("Error tipo dato al operar Boolean con Char.");
+                    resultado.setTipo("Error tipo dato al operar Boolean con Char.");
+                }
+
+
+                //doubles 
+
+                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) * Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Double con String.");
+                    resultado.setTipo("Error tipo dato al operar Double con String.");
+                }
+
+                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) * Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) * Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) * Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] * Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //ints
+                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Int con String.");
+                    resultado.setTipo("Error tipo dato al operar Int con String.");
+                }
+
+                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
+                {
+                    resultado.setValor((Convert.ToInt32(number1) * Convert.ToInt32(number2)).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToInt32(number1) * Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] * Convert.ToInt32(number2)).ToString());
+                    resultado.setTipo("int");
+
+                }
+
+                //chars 
+
+                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar Char con String.");
+                    resultado.setTipo("Error tipo dato al operar Char con String.");
+                }
+
+                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor((Convert.ToInt32(Encoding.ASCII.GetBytes(number1)[0]) * Convert.ToInt32(Encoding.ASCII.GetBytes(number2)[0])).ToString());
+                    resultado.setTipo("int");
+                }
+
+                // string
+                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar String con String.");
+                    resultado.setTipo("Error tipo dato al operar String con String.");
+                }
+                #endregion
+            }
+            else if (Operacion.Equals("division"))
+            {
+                #region DIVISION
+                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con boolean.");
+                    resultado.setTipo("Error tipo dato al operar boolean con boolean.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 / Convert.ToDouble(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 / Convert.ToDouble(number2)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 / Convert.ToDouble(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 / Convert.ToDouble(number1)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+
+                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con string.");
+                    resultado.setTipo("Error tipo dato al operar boolean con string.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 / Convert.ToDouble(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 / Convert.ToDouble(number2)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 / Convert.ToDouble(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 / Convert.ToDouble(number1)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con char.");
+                    resultado.setTipo("Error tipo dato al operar boolean con char.");
+                }
+
+
+                //doubles 
+
+                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar double con string.");
+                    resultado.setTipo("Error tipo dato al operar double con string.");
+                }
+
+                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+                }
+                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) / Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] / Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //ints
+                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar int con string.");
+                    resultado.setTipo("Error tipo dato al operar int con string.");
+                }
+
+                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) / Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) / Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] / Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //chars 
+
+                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar char con string.");
+                    resultado.setTipo("Error tipo dato al operar char con string.");
+                }
+
+                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor((Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]) / Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0])).ToString());
+                    resultado.setTipo("double");
+                }
+
+                // string
+                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar string con string.");
+                    resultado.setTipo("Error tipo dato al operar string con string.");
+                }
+                #endregion
+            }
+            else if (Operacion.Equals("porcentaje"))
+            {
+                #region PORCENTAJE
+
+                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con boolean.");
+                    resultado.setTipo("Error tipo dato al operar boolean con boolean.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 % Convert.ToDouble(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 % Convert.ToDouble(number2)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 % Convert.ToDouble(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 % Convert.ToDouble(number1)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+
+                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con string.");
+                    resultado.setTipo("Error tipo dato al operar boolean con string.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((1 % Convert.ToDouble(number2)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 % Convert.ToDouble(number2)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((1 % Convert.ToDouble(number1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((0 % Convert.ToDouble(number1)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con char.");
+                    resultado.setTipo("Error tipo dato al operar boolean con char.");
+                }
+
+
+                //doubles 
+
+                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar double con string.");
+                    resultado.setTipo("Error tipo dato al operar double con string.");
+                }
+
+                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) % Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] % Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //ints
+                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar int con string.");
+                    resultado.setTipo("Error tipo dato al operar int con string.");
+                }
+
+                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) % Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Convert.ToDouble(number1) % Encoding.ASCII.GetBytes(number2)[0]).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Encoding.ASCII.GetBytes(number1)[0] % Convert.ToDouble(number2)).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //chars 
+
+                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar char con string.");
+                    resultado.setTipo("Error tipo dato al operar char con string.");
+                }
+
+                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor((Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]) % Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0])).ToString());
+                    resultado.setTipo("double");
+                }
+
+                // string
+                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar string con string.");
+                    resultado.setTipo("Error tipo dato al operar string con string.");
+                }
+                #endregion
+            }
+            else if (Operacion.Equals("potencia"))
+            {
+                #region POTENCIA
+
+                if (tipodato1.Equals("boolean") && tipodato2.Equals("boolean"))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con boolean.");
+                    resultado.setTipo("Error tipo dato al operar boolean con boolean.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((Math.Pow(1, Convert.ToDouble(number2))).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((Math.Pow(0, Convert.ToDouble(number2))).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("double"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((Math.Pow(Convert.ToDouble(number1), 1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((Math.Pow(Convert.ToDouble(number1), 0)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+
+                else if ((tipodato1.Equals("boolean") && tipodato2.Equals("string")) || (tipodato2.Equals("boolean") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con string.");
+                    resultado.setTipo("Error tipo dato al operar boolean con string.");
+                }
+
+                else if (tipodato1.Equals("boolean") && tipodato2.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number1))
+                    {
+                        resultado.setValor((Math.Pow(1, Convert.ToDouble(number2))).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((Math.Pow(0, Convert.ToDouble(number2))).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("boolean") && tipodato1.Equals("int"))
+                {
+                    if (Convert.ToBoolean(number2))
+                    {
+                        resultado.setValor((Math.Pow(Convert.ToDouble(number1), 1)).ToString());
+                    }
+                    else
+                    {
+                        resultado.setValor((Math.Pow(Convert.ToDouble(number1), 0)).ToString());
+                    }
+                    resultado.setTipo("double");
+                }
+                else if ((tipodato2.Equals("boolean") && tipodato1.Equals("char")) || (tipodato1.Equals("boolean") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor("Error tipo dato al operar boolean con char.");
+                    resultado.setTipo("Error tipo dato al operar boolean con char.");
+                }
+
+
+                //doubles 
+
+                else if ((tipodato2.Equals("double") && tipodato1.Equals("double")) || (tipodato1.Equals("double") && tipodato2.Equals("double")))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if ((tipodato1.Equals("double") && tipodato2.Equals("string")) || (tipodato2.Equals("double") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar double con string.");
+                    resultado.setTipo("Error tipo dato al operar double con string.");
+                }
+
+                else if (tipodato1.Equals("double") && tipodato2.Equals("int"))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("int"))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString());
+                    resultado.setTipo("double");
+
+                }
+                else if (tipodato1.Equals("double") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0]))).ToString());
+                    resultado.setTipo("double");
+                }
+                else if (tipodato2.Equals("double") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]), Convert.ToDouble(number2))).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                //ints
+                else if ((tipodato1.Equals("int") && tipodato2.Equals("string")) || (tipodato2.Equals("int") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar int con string.");
+                    resultado.setTipo("Error tipo dato al operar int con string.");
+                }
+
+                else if ((tipodato2.Equals("int") && tipodato1.Equals("int")) || (tipodato1.Equals("int") && tipodato2.Equals("int")))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(number2))).ToString());
+                    resultado.setTipo("int");
+                }
+                else if (tipodato1.Equals("int") && tipodato2.Equals("char"))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(number1), Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0]))).ToString());
+                    resultado.setTipo("int");
+
+                }
+                else if (tipodato2.Equals("int") && tipodato1.Equals("char"))
+                {
+                    resultado.setValor((Math.Pow(Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]), Convert.ToDouble(number2))).ToString());
+                    resultado.setTipo("int");
+                }
+
+                //chars 
+
+                else if ((tipodato1.Equals("char") && tipodato2.Equals("string")) || (tipodato2.Equals("char") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar char con string.");
+                    resultado.setTipo("Error tipo dato al operar char con string.");
+                }
+
+                else if ((tipodato2.Equals("char") && tipodato1.Equals("char")) || (tipodato1.Equals("char") && tipodato2.Equals("char")))
+                {
+                    resultado.setValor(Math.Pow(Convert.ToDouble(Encoding.ASCII.GetBytes(number1)[0]), Convert.ToDouble(Encoding.ASCII.GetBytes(number2)[0])).ToString());
+                    resultado.setTipo("double");
+
+                }
+
+                // string
+                else if ((tipodato1.Equals("string") && tipodato2.Equals("string")) || (tipodato2.Equals("string") && tipodato1.Equals("string")))
+                {
+                    resultado.setValor("Error tipo dato al operar string con string.");
+                    resultado.setTipo("Error tipo dato al operar string con string.");
+                }
+                #endregion
+
+            }
+
+            return resultado;
+        }
+
+        public static Retorno Operaciones(ParseTreeNode Nodo)
+        {
+            Retorno resultado = new Retorno("", "");
+
+            try
+            {
+                Retorno number1 = null;
+                Retorno number2 = null;
+
+                switch (Nodo.Term.Name.ToString())
+                {
+                    case "OPERACION":
+                        // OPERACIONES = OPERACIONES + OPEREACIONES1 | OPERACIONES1
+                        if (Nodo.ChildNodes.Count == 3)
+                        {
+                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    number1 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                                else if (i == 2)
+                                {
+                                    number2 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                            }
+                            resultado = operacionSeguntipos(number1.getTipo(), number2.getTipo(), number1.getValor(), number2.getValor(), "suma");
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+
+                        }
+                        break;
+                    case "OPERACIONES1":
+                        // OPERACIONES1 = OPERACIONES1 - OPEREACIONES2 | OP0ERACIONES2
+                        if (Nodo.ChildNodes.Count == 3)
+                        {
+                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    number1 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                                else if (i == 2)
+                                {
+                                    number2 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                            }
+                            resultado = operacionSeguntipos(number1.getTipo(), number2.getTipo(), number1.getValor(), number2.getValor(), "resta");
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+
+                        }
+                        break;
+                    case "OPERACIONES2":
+                        // OPERACIONES2 = OPERACIONES2 * OPEREACIONES3 | OPERACIONES3
+                        if (Nodo.ChildNodes.Count == 3)
+                        {
+                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    number1 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                                else if (i == 2)
+                                {
+                                    number2 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                            }
+                            resultado = operacionSeguntipos(number1.getTipo(), number2.getTipo(), number1.getValor(), number2.getValor(), "multiplicacion");
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+
+                        }
+                        break;
+                    case "OPERACIONES3":
+                        // OPERACIONES3 = OPERACIONES3 / OPEREACIONES4 | OPERACIONES4
+                        if (Nodo.ChildNodes.Count == 3)
+                        {
+                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    number1 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                                else if (i == 2)
+                                {
+                                    number2 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                            }
+                            resultado = operacionSeguntipos(number1.getTipo(), number2.getTipo(), number1.getValor(), number2.getValor(), "division");
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+
+                        }
+                        break;
+                    case "OPERACIONES4":
+                        // OPERACIONES4 = OPERACIONES4 % OPEREACIONES5 | OPERACIONES5
+                        if (Nodo.ChildNodes.Count == 3)
+                        {
+                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    number1 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                                else if (i == 2)
+                                {
+                                    number2 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                            }
+                            resultado = operacionSeguntipos(number1.getTipo(), number2.getTipo(), number1.getValor(), number2.getValor(), "porcentaje");
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+
+                        }
+                        break;
+                    case "OPERACIONES5":
+                        // OPERACIONES5 = OPERACIONES5 ^ OPEREACIONES6 | OPERACIONEES6
+                        if (Nodo.ChildNodes.Count == 3)
+                        {
+                            for (int i = 0; i < Nodo.ChildNodes.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    number1 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                                else if (i == 2)
+                                {
+                                    number2 = Operaciones(Nodo.ChildNodes[i]);
+                                }
+                            }
+                            resultado = operacionSeguntipos(number1.getTipo(), number2.getTipo(), number1.getValor(), number2.getValor(), "potencia");
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+
+                        }
+                        break;
+                    case "OPERACIONES6":
+                        //OPERACIONES6 = - OPEREACIONES7 | OPERACIONES7
+                        if (Nodo.ChildNodes.Count == 2)
+                        {
+                            number1 = Operaciones(Nodo.ChildNodes[1]);
+                            number1.setValor("-" + number1.getValor());
+                            resultado = number1;
+                            return resultado;
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+                        }
+                        break;
+                    case "OPERACIONES7":
+                        // OPERACIONES7.Rule = Entero
+                        //      | Decimal
+                        //    | Id
+                        //  | Id + tkCORA + OPERACION + tkCORC       //acceso a una posicion de un arreglo
+                        //| Cadena
+                        //| LLAMADA                                //llamada a un metodo
+                        //| tkGETUSER + tkPARA + tkPARC            //funcion privada  que devuelde el usuario logeado
+                        //| tkPARA + OPERACION + tkPARC
+                        if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("("))     //vienen parentesis entonces por precedencia se hara primero
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[1]);
+                        }
+                        else if (Nodo.ChildNodes[0].Term.Name.ToString().Equals("LLAMADA"))
+                        {
+                            String idenasignacion = IdVariable;         //CAPTURO A VARIABLE PORQUE COMO CUANDO ESTA ASIGNACNO Y LLAMA A METODO SE PIERDE EL NOMBRE DE LA VARIABLE QUE ESTA ASIGNANDO
+                            EjecucionCodigo(Nodo.ChildNodes[0], AmbitoVariable, Nivel);
+                            resultado = Returnmetodo;
+                            IdVariable = idenasignacion;
+                            Yasedetubo = false;
+                        }
+                        else if (Nodo.ChildNodes.Count == 4)
+                        {
+                            String id = Tipos_Y_Id(Nodo.ChildNodes[0]);        //recibira el id
+                            Retorno posisicon = Operaciones(Nodo.ChildNodes[2]);
+
+                            for (int i = 0; i < Amb.Count; i++)
+                            {
+                                Ambitos simb = (Ambitos)Amb[i];
+                                if (simb.getNivel() == Nivel || simb.getNivel() == 0)
+                                {
+                                    List<Simbolos> si = simb.getSimbolos();
+                                    for (int j = 0; j < si.Count; j++)
+                                    {
+                                        Simbolos yeah = (Simbolos)si[j];
+                                        if (yeah.GetId().Equals(id) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
+                                        {
+                                            if (yeah.GetEsArreglo())
+                                            {
+                                                String[] Arreglo = yeah.GetValores();
+                                                resultado.setValor(Arreglo[Convert.ToInt32(posisicon.getValor())]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            resultado = Operaciones(Nodo.ChildNodes[0]);
+                        }
+                        break;
+
+                    case "Entero":
+                        Retorno resul = new Retorno("int", Nodo.Token.Value.ToString());
+                        resultado = resul;
+                        break;
+                    case "Decimal":
+                        Retorno resul1 = new Retorno("double", Nodo.Token.Value.ToString());
+                        resultado = resul1;
+                        break;
+                    case "Cadena":
+                        Retorno resul2 = new Retorno("string", Nodo.Token.Value.ToString());
+                        resultado = resul2;
+                        break;
+                    case "Char":
+                        Retorno resul5 = new Retorno("char", Nodo.Token.Value.ToString());
+                        resultado = resul5;
+                        break;
+
+                    case "true":
+                    case "false":
+                        Retorno resul3 = new Retorno("boolean", Nodo.Token.Value.ToString());
+                        resultado = resul3;
+                        break;
+
+                    case "Id":      //verificacion que el id exista y tenga valor
+
+                        for (int i = 0; i < Amb.Count; i++)
+                        {
+                            Ambitos simb = (Ambitos)Amb[i];
+                            if (simb.getNivel() == Nivel || simb.getNivel() == 0)
+                            {
+                                List<Simbolos> si = simb.getSimbolos();
+                                for (int j = 0; j < si.Count; j++)
+                                {
+                                    Simbolos yeah = (Simbolos)si[j];
+                                    if (yeah.GetId().Equals(Nodo.Token.Value.ToString()) && (yeah.Getnivel() == Nivel || yeah.Getnivel() == 0))
+                                    {
+                                        Retorno resul4 = new Retorno(yeah.GetTipo().ToLower(), yeah.GetValor());
+                                        resultado = resul4;
+
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+                return resultado;
+            }
+            catch (Exception e)
+            {
+                //resultado = "Error Semantico de tipo de datos.";
+                return resultado;
+            }
+        }
     }
 }

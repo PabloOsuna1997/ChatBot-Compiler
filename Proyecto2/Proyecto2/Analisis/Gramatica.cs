@@ -295,7 +295,7 @@ namespace Proyecto2.Analisis
 
             PRINT.Rule = tkPRINT + tkPARA + LISTAEXPRESIONES + tkPARC + tkPUNTOYCOMA;
 
-            LISTAEXPRESIONES.Rule = LISTAEXPRESIONES + tkCOMA + OPERACION
+            LISTAEXPRESIONES.Rule = LISTAEXPRESIONES + tkMAS + OPERACION
                                     | OPERACION;
 
             #endregion

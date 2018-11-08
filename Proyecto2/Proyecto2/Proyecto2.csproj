@@ -53,6 +53,7 @@
     <Compile Include="Analisis\Analizar.cs" />
     <Compile Include="Analisis\GenerarDOT.cs" />
     <Compile Include="Analisis\Gramatica.cs" />
+    <Compile Include="Analisis\Retorno.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
